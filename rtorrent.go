@@ -699,10 +699,10 @@ func (r *Client) MoveToComplete(ctx context.Context, t Torrent, src string, dst 
 }
 
 // CheckHash checks the hash of a torrent's files
-func (r *Client) CheckHash(ctx context.Context, t Torrent) (string, error) {
+func (r *Client) CheckHash(ctx context.Context, t Torrent) (int, error) {
 	results, err := r.xmlrpcClient.Call(ctx, "d.check_hash", t.Hash)
 	if err != nil {
-		return "", errors.Wrap(err, "d.check_hash XMLRPC call failed")
+		return 0, errors.Wrap(err, "d.check_hash XMLRPC call failed")
 	}
-	return results.([]interface{})[0].(string), nil
+	return results.([]interface{})[0].(int), nil
 }
