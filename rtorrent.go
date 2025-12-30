@@ -670,3 +670,30 @@ func (r *Client) State(ctx context.Context, t Torrent) (int, error) {
 	}
 	return results.([]interface{})[0].(int), nil
 }
+
+// GetDataPath returns the torrent's data path.
+func (r *Client) GetDataPath(ctx context.Context, t Torrent) (string, error) {
+	results, err := r.xmlrpcClient.Call(ctx, "d.data_path", t.Hash)
+	if err != nil {
+		return "", errors.Wrap(err, "d.data_path XMLRPC call failed")
+	}
+	return results.([]interface{})[0].(string), nil
+}
+
+// GetFinishedDir returns the directory path when a file is finished downloading
+func (r *Client) GetFinishedDir(ctx context.Context, t Torrent) (string, error) {
+	results, err := r.xmlrpcClient.Call(ctx, "d.get_finished_dir", t.Hash)
+	if err != nil {
+		return "", errors.Wrap(err, "d.get_finished_dir XMLRPC call failed")
+	}
+	return results.([]interface{})[0].(string), nil
+}
+
+// MoveToComplete moves the file to the path returned by GetFinishedDir
+func (r *Client) MoveToComplete(ctx context.Context, t Torrent, src string, dst string) (int, error) {
+	results, err := r.xmlrpcClient.Call(ctx, "d.move_to_complete", t.Hash, src, dst)
+	if err != nil {
+		return 0, errors.Wrap(err, "d.move_to_complete XMLRPC call failed")
+	}
+	return results.([]interface{})[0].(int), nil
+}

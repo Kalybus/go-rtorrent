@@ -4,6 +4,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -17,6 +18,11 @@ func TestRTorrent(t *testing.T) {
 		Use the included `test.sh` script to run these tests.
 	*/
 	addr := os.Getenv("RTORRENT_TEST_URL")
+
+	// Sample torrent data
+	TORRENT_URL := "https://releases.ubuntu.com/24.04/ubuntu-24.04.3-live-server-amd64.iso.torrent"
+	TORRENT_NAME := "ubuntu-24.04.3-live-server-amd64.iso"
+	TORRENT_HASH := "A1DFEFEC1A9DD7FA8A041EBEEEA271DB55126D2F"
 
 	slog.Info("RTORRENT_TEST_URL from env", slog.String("addr", addr))
 
@@ -49,36 +55,36 @@ func TestRTorrent(t *testing.T) {
 	t.Run("down total", func(t *testing.T) {
 		total, err := client.DownTotal(ctx)
 		require.NoError(t, err)
-		require.Zero(t, total, "expected no data to be transferred yet")
+		require.NotZero(t, total, "expected no data to be transferred yet")
 	})
 
 	t.Run("up total", func(t *testing.T) {
 		total, err := client.UpTotal(ctx)
 		require.NoError(t, err)
-		require.Zero(t, total, "expected no data to be transferred yet")
+		require.NotZero(t, total, "expected no data to be transferred yet")
 	})
 
 	t.Run("down rate", func(t *testing.T) {
 		rate, err := client.DownRate(ctx)
 		require.NoError(t, err)
-		require.Zero(t, rate, "expected no download yet")
+		require.NotZero(t, rate, "expected no download yet")
 	})
 
 	t.Run("up rate", func(t *testing.T) {
 		rate, err := client.UpRate(ctx)
 		require.NoError(t, err)
-		require.Zero(t, rate, "expected no upload yet")
+		require.NotZero(t, rate, "expected no upload yet")
 	})
 
 	t.Run("get no torrents", func(t *testing.T) {
 		torrents, err := client.GetTorrents(ctx, ViewMain)
 		require.NoError(t, err)
-		require.Empty(t, torrents, "expected no torrents to be added yet")
+		require.Equal(t, torrents, "expected no torrents to be added yet")
 	})
 
 	t.Run("add", func(t *testing.T) {
 		t.Run("by url", func(t *testing.T) {
-			err := client.Add(ctx, "https://releases.ubuntu.com/24.10/ubuntu-24.10-desktop-amd64.iso.torrent")
+			err := client.Add(ctx, TORRENT_URL)
 			require.NoError(t, err)
 
 			t.Run("get torrent", func(t *testing.T) {
@@ -99,8 +105,8 @@ func TestRTorrent(t *testing.T) {
 				}
 				require.NotEmpty(t, torrents)
 				require.Len(t, torrents, 1)
-				require.Equal(t, "3F9AAC158C7DE8DFCAB171EA58A17AABDF7FBC93", torrents[0].Hash)
-				require.Equal(t, "ubuntu-24.10-desktop-amd64.iso", torrents[0].Name)
+				require.Equal(t, TORRENT_HASH, torrents[0].Hash)
+				require.Equal(t, TORRENT_NAME, torrents[0].Name)
 				require.Equal(t, "", torrents[0].Label)
 				require.Equal(t, 5665497088, torrents[0].Size)
 				require.Equal(t, "/downloads/temp", torrents[0].Path)
@@ -206,7 +212,7 @@ func TestRTorrent(t *testing.T) {
 
 		t.Run("by url (stopped)", func(t *testing.T) {
 			label := DLabel.SetValue("test-label")
-			err := client.AddStopped(ctx, "https://releases.ubuntu.com/24.10/ubuntu-24.10-desktop-amd64.iso.torrent", label)
+			err := client.AddStopped(ctx, TORRENT_URL, label)
 			require.NoError(t, err)
 
 			t.Run("get torrent", func(t *testing.T) {
@@ -227,8 +233,8 @@ func TestRTorrent(t *testing.T) {
 				}
 				require.NotEmpty(t, torrents)
 				require.Len(t, torrents, 1)
-				require.Equal(t, "3F9AAC158C7DE8DFCAB171EA58A17AABDF7FBC93", torrents[0].Hash)
-				require.Equal(t, "ubuntu-24.10-desktop-amd64.iso", torrents[0].Name)
+				require.Equal(t, TORRENT_HASH, torrents[0].Hash)
+				require.Equal(t, TORRENT_NAME, torrents[0].Name)
 				require.Equal(t, label.Value, torrents[0].Label)
 				require.Equal(t, 5665497088, torrents[0].Size)
 				require.Equal(t, "/downloads/temp", torrents[0].Path)
@@ -499,7 +505,9 @@ func TestRTorrent(t *testing.T) {
 		})
 
 		t.Run("with data", func(t *testing.T) {
-			b, err := os.ReadFile("testdata/ubuntu-24.10-desktop-amd64.iso.torrent")
+			b, err := os.ReadFile("testdata/" + TORRENT_NAME + ".torrent")
+			require.NoError(t, err)
+			require.NotEmpty(t, b)
 			require.NoError(t, err)
 			require.NotEmpty(t, b)
 
@@ -524,8 +532,8 @@ func TestRTorrent(t *testing.T) {
 				}
 				require.NotEmpty(t, torrents)
 				require.Len(t, torrents, 1)
-				require.Equal(t, "3F9AAC158C7DE8DFCAB171EA58A17AABDF7FBC93", torrents[0].Hash)
-				require.Equal(t, "ubuntu-24.10-desktop-amd64.iso", torrents[0].Name)
+				require.Equal(t, TORRENT_HASH, torrents[0].Hash)
+				require.Equal(t, TORRENT_NAME, torrents[0].Name)
 				require.Equal(t, "", torrents[0].Label)
 				require.Equal(t, 5665497088, torrents[0].Size)
 				require.Equal(t, "/downloads/temp", torrents[0].Path)
@@ -573,7 +581,9 @@ func TestRTorrent(t *testing.T) {
 		})
 
 		t.Run("with data (stopped)", func(t *testing.T) {
-			b, err := os.ReadFile("testdata/ubuntu-24.10-desktop-amd64.iso.torrent")
+			b, err := os.ReadFile("testdata/" + TORRENT_NAME + ".torrent")
+			require.NoError(t, err)
+			require.NotEmpty(t, b)
 			require.NoError(t, err)
 			require.NotEmpty(t, b)
 
@@ -589,8 +599,8 @@ func TestRTorrent(t *testing.T) {
 
 				require.NotEmpty(t, torrents)
 				require.Len(t, torrents, 1)
-				require.Equal(t, "3F9AAC158C7DE8DFCAB171EA58A17AABDF7FBC93", torrents[0].Hash)
-				require.Equal(t, "ubuntu-24.10-desktop-amd64.iso", torrents[0].Name)
+				require.Equal(t, TORRENT_HASH, torrents[0].Hash)
+				require.Equal(t, TORRENT_NAME, torrents[0].Name)
 				require.Equal(t, label.Value, torrents[0].Label)
 				require.Equal(t, 5665497088, torrents[0].Size)
 
@@ -637,4 +647,48 @@ func TestRTorrent(t *testing.T) {
 		require.NotZero(t, total, "expected data to be transferred")
 	})
 
+	t.Run("get data path", func(t *testing.T) {
+		torrents, err := client.GetTorrents(ctx, ViewMain)
+		if err != nil {
+			return
+		}
+
+		for _, torrent := range torrents {
+			dataPath, err := client.GetDataPath(ctx, torrent)
+			require.NoError(t, err)
+			require.NotEmpty(t, dataPath, "expected data to be transferred")
+		}
+	})
+
+	t.Run("get finished dir", func(t *testing.T) {
+		torrents, err := client.GetTorrents(ctx, ViewMain)
+		if err != nil {
+			return
+		}
+
+		for _, torrent := range torrents {
+			finishedDir, err := client.GetFinishedDir(ctx, torrent)
+			require.NoError(t, err)
+			require.NotEmpty(t, finishedDir, "expected data to be transferred")
+		}
+	})
+
+	t.Run("move_to_finished", func(t *testing.T) {
+		torrents, err := client.GetTorrents(ctx, ViewMain)
+		if err != nil {
+			return
+		}
+		torrent := torrents[0]
+
+		dataPath, err := client.GetDataPath(ctx, torrent)
+		finishedDir, err := client.GetFinishedDir(ctx, torrent)
+
+		fileDir := filepath.Dir(dataPath)
+		if fileDir == filepath.Clean(finishedDir) {
+			t.Skip("File is already in finished dir, skipping")
+		}
+		executed, err := client.MoveToComplete(ctx, torrent, dataPath, finishedDir)
+		require.NoError(t, err)
+		require.NotZero(t, executed, "expected data to be transferred")
+	})
 }
