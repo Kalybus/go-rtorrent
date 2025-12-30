@@ -5,10 +5,10 @@
 
 > rTorrent XMLRPC Bindings for Go (golang)
 
-Fork of [github.com/mrobinsn/go-rtorrent](github.com/mrobinsn/go-rtorrent).
+Fork of [github.com/autobrr/go-rtorrent](github.com/autobrr/go-rtorrent).
 
 ## Documentation
-[GoDoc](https://godoc.org/github.com/mrobinsn/go-rtorrent/rtorrent)
+[GoDoc](https://godoc.org/github.com/Kalybus/go-rtorrent/rtorrent)
 
 ## Features
 - Get IP, Name, Up/Down totals
@@ -20,9 +20,9 @@ Fork of [github.com/mrobinsn/go-rtorrent](github.com/mrobinsn/go-rtorrent).
 - Delete a torrent (including files)
 
 ## Installation
-To install the package, run `go get github.com/autobrr/go-rtorrent`
+To install the package, run `go get github.com/Kalybus/go-rtorrent`
 
-To use it in application, import `"github.com/autobrr/go-rtorrent"`
+To use it in application, import `"github.com/Kalybus/go-rtorrent"`
 
 ## Library Usage
 

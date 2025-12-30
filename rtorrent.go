@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/autobrr/go-rtorrent/xmlrpc"
+	"github.com/Kalybus/go-rtorrent/xmlrpc"
 
 	"github.com/pkg/errors"
 )

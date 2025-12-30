@@ -1,4 +1,4 @@
-module github.com/autobrr/go-rtorrent
+module github.com/Kalybus/go-rtorrent
 
 go 1.20
 
